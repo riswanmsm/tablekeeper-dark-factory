@@ -1,11 +1,28 @@
 .PHONY: help setup run test test-offline docker-build docker-run clean
 
+# Auto-detect best stable Python interpreter (< 3.14 to ensure pre-built wheels exist for PyO3/pydantic)
+PYTHON_STABLE := $(shell for py in python3.12 python3.13 python3.11 python3.10 python3; do \
+	if command -v $$py > /dev/null 2>&1; then \
+		ver=$$($$py -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null); \
+		major=$$(echo $$ver | cut -d. -f1); \
+		minor=$$(echo $$ver | cut -d. -f2); \
+		if [ "$$major" = "3" ] && [ "$$minor" -lt 14 ]; then \
+			echo $$py; \
+			break; \
+		fi; \
+	fi; \
+done)
+PYTHON_STABLE := $(if $(PYTHON_STABLE),$(PYTHON_STABLE),python3)
+
 VENV = .venv
 PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 UVICORN = $(VENV)/bin/uvicorn
 PYTEST = $(VENV)/bin/pytest
 PORT ?= 8080
+
+# Forward compatibility flag in case a native build is attempted
+export PYO3_USE_ABI3_FORWARD_COMPATIBILITY = 1
 
 help:
 	@echo "=================================================================="
@@ -21,17 +38,14 @@ help:
 	@echo "=================================================================="
 
 $(VENV):
-	@echo "⚙️ Creating isolated virtual environment in $(VENV)..."
-	@python3 -m venv $(VENV)
-	@echo "✓ Virtual environment created."
+	@echo "⚙️ Creating isolated virtual environment using $(PYTHON_STABLE)..."
+	@$(PYTHON_STABLE) -m venv $(VENV)
+	@echo "✓ Virtual environment created ($$($(PYTHON) --version))."
 
 setup: $(VENV)
 	@echo "📦 Installing dependencies into isolated environment..."
-	@if command -v uv > /dev/null 2>&1; then \
-		uv pip install -r requirements.txt; \
-	else \
-		$(PIP) install --upgrade pip --quiet && $(PIP) install -r requirements.txt --quiet; \
-	fi
+	@$(PIP) install --upgrade pip --quiet
+	@$(PIP) install -r requirements.txt
 	@echo "✓ Environment ready at $(VENV)"
 
 run: setup
