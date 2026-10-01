@@ -1,0 +1,46 @@
+services:
+  seat-planner:
+    build: .
+    environment:
+      - SEAT_ROLE=planner
+      - BAND_AGENT_ID=${PLANNER_AGENT_ID}
+      - BAND_API_KEY=${PLANNER_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - MODEL_NAME=${MODEL_NAME:-claude-sonnet-4-5}
+    volumes:
+      - ./workspace:/workspace
+      - ./mandates:/mandates:ro
+    restart: unless-stopped
+  seat-builder:
+    build: .
+    environment:
+      - SEAT_ROLE=builder
+      - BAND_AGENT_ID=${BUILDER_AGENT_ID}
+      - BAND_API_KEY=${BUILDER_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - MODEL_NAME=${MODEL_NAME:-claude-sonnet-4-5}
+    volumes:
+      - ./workspace:/workspace
+      - ./mandates:/mandates:ro
+    restart: unless-stopped
+  seat-verifier:
+    build: .
+    environment:
+      - SEAT_ROLE=verifier
+      - BAND_AGENT_ID=${VERIFIER_AGENT_ID}
+      - BAND_API_KEY=${VERIFIER_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - MODEL_NAME=${MODEL_NAME:-claude-sonnet-4-5}
+    volumes:
+      - ./workspace:/workspace
+      - ./mandates:/mandates:ro
+    restart: unless-stopped
