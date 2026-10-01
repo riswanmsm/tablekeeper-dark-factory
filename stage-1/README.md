@@ -15,14 +15,33 @@
 
 ---
 
-## 🚀 Quick Start (Local)
+## 🚀 Quick Start (Isolated Environment & One-Click Execution)
 
+To guarantee zero pollution of your system Python environment (and prevent PEP 668 errors on macOS / Linux), choose from these standard options:
+
+### Option 1: One-Click Automated Launcher (Recommended)
+Automatically creates an isolated `.venv`, syncs dependencies, and boots the service:
 ```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+./run.sh
+```
 
-# 2. Run service
-uvicorn src.main:app --host 0.0.0.0 --port 8080
+### Option 2: Standard Makefile Workflow
+```bash
+# Setup isolated .venv and install dependencies
+make setup
+
+# Launch the service on http://localhost:8080
+make run
+
+# Run concurrency test suite inside .venv
+make test
+```
+
+### Option 3: Zero-Dependency Docker Run
+No Python or pip needed on the host machine:
+```bash
+make docker-build
+make docker-run
 ```
 Open `http://localhost:8080/` in your browser to interact with the responsive reservation portal.
 
